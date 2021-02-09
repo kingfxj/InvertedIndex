@@ -34,7 +34,7 @@ if __name__ == "__main__":
         if ID in contents['doc_id']:
             error('Invalid Repeated Document ID')
 
-        # Save 
+        # Save data into dictionary according to its zone ID
         for key in data.keys():
             if key in contents.keys():
                 contents[key].append(data[key])
