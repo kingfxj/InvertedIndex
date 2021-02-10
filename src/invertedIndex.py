@@ -25,7 +25,13 @@ if __name__ == "__main__":
     inputData = json.load(inputFile)
     docId = []
     for data in inputData:
+
         # Validate doc ID and they are unique
+
+        #print("!!!")
+        #print(data["line"].split())
+        # Validate doc_id and it is unique
+
         try:
             ID = int(data['doc_id'])
         except ValueError:
@@ -34,7 +40,24 @@ if __name__ == "__main__":
             error('Invalid Document ID')
         docId.append(ID)
 
+
         book = data['book']             # The book name of the document
         line = data['line']             # The line of the document
 
     print('done')
+
+        # Save data into dictionary according to its zone ID
+    for key in data.keys():
+        if key in contents.keys() and key == "line":
+            contents[key].append(data[key].split())
+        if key in contents.keys():
+            contents[key].append(data[key])   
+        else:
+            contents[key] = [ data[key] ]
+
+    #print(contents)
+    print('done')
+    for item in contents.items():
+        print(item)
+
+
