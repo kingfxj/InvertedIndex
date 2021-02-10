@@ -10,3 +10,11 @@ Run the program to create inverted index: In command line, go to src folder
 type python3 invertedIndex.py [Path do json file] [output file name]
 For example, we use data/dr_seuss_lines.json as input and the output file is called index.txt
 python3 invertedIndex.py ../data/dr_seuss_lines.json index.tsv
+type python3 invertedIndex.py [Path to json file] [Path to directory where the index will be stored]
+
+For example, we use data/dr_seuss_lines.json as input and the output file directory is the /dr_seuss_lines/ directory,</br>
+type "python3 invertedIndex.py ../data/dr_seuss_lines.json dr_seuss_lines/" in command line
+
+If we use data/movie_plots.json as input and the output file directory is the /movie_plots/ directory</br>
+type "python3 invertedIndex.py ../data/movie_plots.json movie_plots/" in command line.
+
