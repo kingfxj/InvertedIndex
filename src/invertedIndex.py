@@ -1,5 +1,6 @@
-import json, sys
+import csv, json, string, sys
 
+# start = time.clock()
 def error(name):
     '''
     Print out the error and exit the program with -1
@@ -8,38 +9,91 @@ def error(name):
     print(name)
     exit(-1)
 
+# Tokenize the list value
+def tokenize(value):
+    words = []
+    for word in value:
+        words.append(word.translate(str.maketrans('', '', string.punctuation)).lower())
+    return words
+
+# Create the subdictionary where the keys are the words
+# and the values the lists of Document IDs that they appear
+def indexConstruction(dictionary, ID, value):
+    for word in value:
+        if word in dictionary.keys():
+            if ID not in dictionary[word]:
+                dictionary[word].append(ID)
+        else:
+            dictionary[word] = [ID]
+    return dictionary
+
+def dictionaryConstruction(document, ID, dictionary):
+    # Loop through each zone in the document
+    for zone in document.keys():
+        # Validate zone ID
+        if zone != 'doc_id':
+            if zone not in dictionary.keys():
+                for c in zone:
+                    if c in string.punctuation or c.isspace():
+                        error("Invalid zone ID" + zone)
+            if list(document.keys()).count(zone) != 1:
+                error("Repeated zone ID" + zone)
+
+            # Save the tokenized value into dictionary contents
+            if zone in dictionary.keys():
+                dictionary[zone] = indexConstruction(dictionary[zone], ID, tokenize(document[zone].split()))
+            else:
+                dictionary[zone] = indexConstruction({}, ID, tokenize(document[zone].split()))
+    return dictionary
+
+# Create the TSV file and write the inverted index in it
+def writeTSVfile(dictionary, directory):
+    # Loop through each zone in the dictionary
+    for zone in dictionary.keys():
+        if zone != 'doc_id':
+            # Create tsv file for write with zone name
+            file = open(directory+zone+'.tsv', 'w')
+            theWriter = csv.writer(file, delimiter='\t')
+            # Write each word's inverted index as a row
+            for word in dictionary[zone].keys():
+                if len(word) != 0:
+                    theWriter.writerow([word, len(dictionary[zone][word]), dictionary[zone][word]])
+
 if __name__ == "__main__":
-    # Get the arguments and validate the number
+    # Get the arguments and validate the number of arguments
     arguments = sys.argv
     if len(arguments) != 3:
         error("Invalid arguents")
+    directory = arguments[2]
 
-    # Open the input file for read and output file for write
+    # Open the input json file for read
     try:
         inputFile = open(arguments[1], 'r')
-        outputFile = open(arguments[2], 'w')
     except IOError:
         error('Invalid file arguments')
 
     # Load and parse json data
     inputData = json.load(inputFile)
-    # keys are the names of zones, and each value is a list of its values in all documents
-    contents = {'doc_id' : []}
-    for data in inputData:
+    dictionary = {'doc_id' : []}
+    for document in inputData:
         # Validate doc_id and it is unique
         try:
-            ID = int(data['doc_id'])
+            ID = int(document['doc_id'])
         except ValueError:
             error('Invalid Document ID')
-        if ID in contents['doc_id']:
+        if ID in dictionary['doc_id']:
             error('Invalid Repeated Document ID')
+        dictionary['doc_id'].append(ID)
 
-        # Save data into dictionary according to its zone ID
-        for key in data.keys():
-            if key in contents.keys():
-                contents[key].append(data[key])
-            else:
-                contents[key] = [ data[key] ]
+        # Validate document has at least one zone
+        if len(document.keys()) < 2:
+            error("Invalid Document zone")
 
-    print(contents)
-    print('done')
+        # Create dictionary where the keys are the zone ID
+        # The value of each dictionary is a subdictionary
+        #  which is the inverted index
+        # The key for the the subdictionary are the words
+        #  and the value is a list of the document ID which they appear
+        dictionary = dictionaryConstruction(document, ID, dictionary)
+
+    writeTSVfile(dictionary, directory)
