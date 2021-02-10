@@ -23,41 +23,31 @@ if __name__ == "__main__":
 
     # Load and parse json data
     inputData = json.load(inputFile)
-    docId = []
+    # keys are the names of zones, and each value is a list of its values in all documents
+    contents = {'doc_id' : []}
     for data in inputData:
-
-        # Validate doc ID and they are unique
-
         #print("!!!")
         #print(data["line"].split())
         # Validate doc_id and it is unique
-
         try:
             ID = int(data['doc_id'])
         except ValueError:
             error('Invalid Document ID')
-        if ID in docId:
-            error('Invalid Document ID')
-        docId.append(ID)
-
-
-        book = data['book']             # The book name of the document
-        line = data['line']             # The line of the document
-
-    print('done')
+        if ID in contents['doc_id']:
+            error('Invalid Repeated Document ID')
 
         # Save data into dictionary according to its zone ID
-    for key in data.keys():
-        if key in contents.keys() and key == "line":
-            contents[key].append(data[key].split())
-        if key in contents.keys():
-            contents[key].append(data[key])   
-        else:
-            contents[key] = [ data[key] ]
+        for key in data.keys():
+            #split the lines into tokens
+            if key in contents.keys() and key == "line":
+                contents[key].append(data[key].split())
+            if key in contents.keys():
+                contents[key].append(data[key])   
+            else:
+                contents[key] = [ data[key] ]
 
     #print(contents)
     print('done')
     for item in contents.items():
         print(item)
-
 
