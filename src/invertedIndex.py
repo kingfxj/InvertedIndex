@@ -55,6 +55,7 @@ def writeTSVfile(dictionary, directory):
             file = open(directory+zone+'.tsv', 'w')
             theWriter = csv.writer(file, delimiter='\t')
             # Write each word's inverted index as a row
+            theWriter.writerow(list(dictionary.keys()))
             for word in dictionary[zone].keys():
                 if len(word) != 0:
                     theWriter.writerow([word, len(dictionary[zone][word]), dictionary[zone][word]])
