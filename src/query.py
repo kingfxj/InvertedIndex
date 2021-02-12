@@ -1,66 +1,73 @@
-import sys
+test_list_2 = [['1',1,[0]],
+['2',2,[0,1]],
+['three',1,[4]],
+['four',6,[1,3,5,6,7,8]],
+['five',3,[1,2,3]],
+['six',2,[0,6]],
+['seven',4,[1,5,8,9]],
+['eight',1,[3]]]
+tes_q = ["four AND five","1 OR six", "seven AND NOT eight","four OR (2 AND seven)"]
+tes_q = ["four AND five"]
 
-def error(name):
-    '''
-    Print out the error and exit the program with -1
-    input: name is the name of the error
-    '''
-    print(name)
-    exit(-1)
-
-#Class Boolean
-data_sues_lines = open("index.tsvline.tsv")
-
-data_list = []
-
-for line in data_sues_lines:
-	if len(line) >1:
-		data_list.append(line.split())
-
-test_list = []
-
-for i in data_list:
-	if len(i) < 4:
-		test_list.append(i)
-
-for i in test_list:
-	i[2] = int(i[2][1])
-
-print(test_list)
-print(len(test_list))
-class Boolean:
-
-	def __init__(self,data,query):
-
+class Posting:
+	def __init__(self,data,target):
+		self.target = target
 		self.data = data
-		self.query = query
-		self.binary_array = []
+		self.word = ''
+		self.ids = ''
 
+	def lookUp(self):
+		for index in self.data:
+			if index[0] ==self.target:
+				self.word = index[0]
+				self.ids = index[2]
 
-	# method retrieve
-	def retrieve(self):
-		for i in self.data:
-			self.binary_array.append(0)
-		return self.binary_array
 		
 
+	def getPosting(self):
+		return [self.word,self.ids]
 
-	# method AND
+class Boolean:
+
+	def __init__(self,posting_1,posting_2):
+		self.posting_1 = posting_1
+		self.posting_2 = posting_2
+		self.p1_length = len(posting_1[1]) 
+		self.p2_length = len(posting_2[1]) 
 
 
-	# method OR
+	def getAnd(self):
+		pointer_1 = 0
+		pointer_2 = 0
+		answer = []
+		while pointer_1!= self.p1_length and pointer_2 != self.p2_length:
+			if self.posting_1[1][pointer_1] ==self.posting_2[1][pointer_2]:
+				answer.append(self.posting_1[1][pointer_1])
+				pointer_1 +=1
+				pointer_2 +=1
+			elif self.posting_1[1][pointer_1] <self.posting_2[1][pointer_2]:
+				pointer_1 +=1
+			else:
+				pointer_2 +=1
+		return answer
 
 
-'''
-if __name__ == "__main__":
-    # Get the arguments and validate the number
-    arguments = sys.argv
-    if len(arguments) != 3:
-        error("Invalid arguents")
+	def getOr(self):
+		pass
 
-    print('done')
-'''
-query = "test"
-boolean = Boolean(test_list,query)
-result = boolean.retrieve()
-print(result)
+	def getAndNot(self):
+		pass
+
+
+posting_1 = Posting(test_list_2,'four')
+posting_2 = Posting(test_list_2,'seven')
+posting_1.lookUp()
+posting_2.lookUp()
+
+posting_1 = posting_1.getPosting()
+posting_2 = posting_2.getPosting()
+
+boolean = Boolean(posting_1,posting_2)
+
+boolean.getAnd()
+print(boolean.getAnd())
