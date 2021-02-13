@@ -5,7 +5,10 @@
 3. List all sources consulted while completing the assignment.
 
 King Fu (CCID: xinjian) Scott Kavalinas (CCID:  skavalin)
- video link (skavalin): https://drive.google.com/drive/folders/1n4XHfD5OLlv0xrpVhheKcYigvEI9EZnv?usp=sharing
+
+
+#video link (skavalin): https://drive.google.com/drive/folders/1n4XHfD5OLlv0xrpVhheKcYigvEI9EZnv?usp=sharing
+
 
 Run the program invertedIndex.py to create inverted index: In command line, go to src folder.
 type python3 invertedIndex.py [Path to json file] [Path to directory where the index will be stored</br>
