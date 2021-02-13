@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import csv, json, nltk, string, sys
-=======
-import csv, json, string, sys
-import nltk
 from nltk import WordNetLemmatizer
->>>>>>> c526020895956cd6b06badea84acb2b94c464d92
 nltk.download('wordnet')
 
 def error(name):
@@ -18,7 +13,6 @@ def error(name):
 # Tokenize the list value
 def tokenize(value):
     words = []
-    print(WordNetLemmatizer().lemmatize("countries"))
     for word in value:
         # Lemmatize the word
         word = word.translate(str.maketrans('', '', string.punctuation)).lower()
