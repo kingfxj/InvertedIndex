@@ -1,12 +1,170 @@
-import boolean, sys
+import csv, re, sys
+from invertedIndex import tokenize
 
 def error(name):
     '''
     Print out the error and exit the program with -1
     input: name is the name of the error
     '''
-    print(name)
+    print(name, file=sys.stderr)
     exit(-1)
+
+def getSubquery(query):
+    subquery = re.findall(r"\((.*?)\)", query)
+    for q in subquery:
+        query = query.replace('(' + q + ')', '')
+    segments = query.split()
+    i = 0
+    for j in range(len(segments)):
+        if segments[j-1] in ['AND', 'OR', 'NOT'] and segments[j] in ['AND', 'OR', 'NOT']:
+            segments.insert(j, getSubquery(subquery[i]))
+            i += 1
+    if segments[-1] in ['AND', 'OR', 'NOT']:
+        segments.append(getSubquery(subquery[-1]))
+    for i in range(len(segments)):
+        if type(segments[i]) != list:
+            segments[i] = segments[i].split(':')
+    return segments
+
+def getFileNames(segments):
+    fileNames = []
+    for segment in segments:
+        if len(segment) != 1 and segment[0] not in fileNames:
+            if type(segment[0]) != str:
+                for name in getFileNames(segment):
+                    if name not in fileNames:
+                        fileNames.append(name)
+            else:
+                fileNames.append(segment[0])
+    return fileNames
+
+# Key is the file name and
+# the value is the posting lists for that file
+def dictionaryStore(fileNames):
+    dictionary = { }
+    for fileName in fileNames:
+        try:
+            inputFile = open(directory + fileName + '.tsv', 'r')
+        except IOError:
+            error("Invalid arguments")
+        csvReader = csv.reader(inputFile, delimiter='\t')
+        title = next(csvReader)
+
+        data = [[row[0], int(row[1]), row[2]] for row in csvReader]
+        for i in range(len(data)):
+            data[i][2] = data[i][2][1:-1].split(', ')
+            for j in range(len(data[i][2])):
+                data[i][2][j] = int(data[i][2][j])
+        dictionary[fileName] = data
+    return (dictionary, title)
+
+class Posting:
+	def __init__(self,data,target):
+		self.target = target
+		self.data = data
+		self.word = ''
+		self.ids = ''
+
+	def lookUp(self):
+		for index in self.data:
+			if index[0] ==self.target:
+				self.word = index[0]
+				self.ids = index[2]
+
+	def getPosting(self):
+		return [self.word,self.ids]
+
+def createPosting(dictionary, segments):
+    postings = []
+    for segment in segments:
+        if len(segment) != 1:
+            if type(segment[0]) == list:
+                postings.append(createPosting(dictionary, segment))
+            else:
+                posting = Posting(dictionary[segment[0]], tokenize([segment[1]])[0])
+                posting.lookUp()
+                posting = posting.getPosting()
+                postings.append(posting)
+        else:
+            postings.append(segment[0])
+    return postings
+
+class Boolean:
+	def __init__(self,posting_1,posting_2):
+		self.posting_1 = posting_1
+		self.posting_2 = posting_2
+		self.p1_length = len(posting_1[1]) 
+		self.p2_length = len(posting_2[1]) 
+
+	def getAnd(self):
+		pointer_1 = 0
+		pointer_2 = 0
+		answer = ['', []]
+		while pointer_1< self.p1_length and pointer_2 < self.p2_length:
+			if self.posting_1[1][pointer_1] ==self.posting_2[1][pointer_2]:
+				answer[1].append(self.posting_1[1][pointer_1])
+				pointer_1 +=1
+				pointer_2 +=1
+			elif self.posting_1[1][pointer_1] <self.posting_2[1][pointer_2]:
+				pointer_1 +=1
+			else:
+				pointer_2 +=1
+		return answer
+
+	def getOr(self):
+		pointer_1 = 0
+		pointer_2 = 0
+		answer = ['', []]
+		while pointer_1<self.p1_length and pointer_2 < self.p2_length:
+			if self.posting_1[1][pointer_1] ==self.posting_2[1][pointer_2]:
+				answer[1].append(self.posting_1[1][pointer_1])
+				pointer_1 +=1
+				pointer_2 +=1
+			elif self.posting_1[1][pointer_1] <self.posting_2[1][pointer_2]:
+				answer[1].append(self.posting_1[1][pointer_1])
+				pointer_1 +=1
+			else:
+				answer[1].append(self.posting_2[1][pointer_2])
+				pointer_2 +=1
+		#find postings for size mis-matches
+		while pointer_1<self.p1_length:
+			answer[1].append(self.posting_1[1][pointer_1])
+			pointer_1 +=1
+		while pointer_2<self.p2_length:
+			answer[1].append(self.posting_2[1][pointer_2])
+			pointer_2 +=1
+		return answer
+
+	def getAndNot(self):
+		pointer_1 = 0
+		pointer_2 = 0
+		answer = ['', []]
+		while pointer_1< self.p1_length and pointer_2 < self.p2_length:
+			if self.posting_1[1][pointer_1] ==self.posting_2[1][pointer_2]:
+				pointer_1 +=1
+				pointer_2 +=1
+			elif self.posting_1[1][pointer_1] <self.posting_2[1][pointer_2]:
+				answer[1].append(self.posting_1[1][pointer_1])
+				pointer_1 +=1
+			else:
+				pointer_2 +=1
+
+		return answer
+
+def getPostings(postings):
+    for i in range(len(postings)-1):
+        if type(postings[i]) == str:
+            if type(postings[i-1][0]) == list:
+                postings[i-1] = getPostings(postings[i-1])[-1]
+
+            if type(postings[i+1][0]) == list:
+                postings[i+1] = getPostings(postings[i+1])[-1]
+            boolean = Boolean(postings[i-1],postings[i+1])
+            if postings[i] == 'AND':
+                postings[i+1] = boolean.getAnd()
+            elif postings[i] == 'OR':
+                postings[i+1] = boolean.getOr()
+    return postings
 
 if __name__ == "__main__":
     # Get the arguments and validate the number
@@ -14,4 +172,26 @@ if __name__ == "__main__":
     if len(arguments) != 3:
         error("Invalid arguents")
 
-    print('done')
+    directory = arguments[1]
+    query = arguments[2]
+
+    segments = getSubquery(query)
+    print(segments)
+
+    fileNames = getFileNames(segments)
+    print(fileNames)
+
+    dictionary, title = dictionaryStore(fileNames)
+    postings = createPosting(dictionary, segments)
+    print(postings)
+
+    postings = getPostings(postings)
+    # for i in range(len(postings)-1):
+    #     if type(postings[i]) == str:
+    #         boolean = Boolean(postings[i-1],postings[i+1])
+    #         if postings[i] == 'AND':
+    #             postings[i+1] = boolean.getAnd()
+    #         elif postings[i] == 'OR':
+    #             postings[i+1] = boolean.getOr()
+
+    print(postings[-1][1])

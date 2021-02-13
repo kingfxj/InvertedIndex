@@ -6,7 +6,7 @@ def error(name):
     Print out the error and exit the program with -1
     input: name is the name of the error
     '''
-    print(name)
+    print(name, file=sys.stderr)
     exit(-1)
 
 # Tokenize the list value
@@ -54,8 +54,8 @@ def writeTSVfile(dictionary, directory):
             # Create tsv file for write with zone name
             file = open(directory+zone+'.tsv', 'w')
             theWriter = csv.writer(file, delimiter='\t')
+            theWriter.writerow(['Word', 'Frequency', 'Posting list'])
             # Write each word's inverted index as a row
-            theWriter.writerow(list(dictionary.keys()))
             for word in dictionary[zone].keys():
                 if len(word) != 0:
                     theWriter.writerow([word, len(dictionary[zone][word]), dictionary[zone][word]])
