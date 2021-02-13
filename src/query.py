@@ -64,13 +64,14 @@ def dictionaryStore(fileNames):
         dictionary[fileName] = data
     return (dictionary, title)
 
+#make postings objects for comparisons
 class Posting:
 	def __init__(self,data,target):
 		self.target = target
 		self.data = data
 		self.word = ''
 		self.ids = ''
-
+#retrieve posting with word (word and posting list will be returned)
 	def lookUp(self):
 		for index in self.data:
 			if index[0] ==self.target:
@@ -89,20 +90,22 @@ def createPosting(dictionary, segments):
                 postings.append(createPosting(dictionary, segment))
             else:
                 posting = Posting(dictionary[segment[0]], tokenize([segment[1]])[0])
+                #look up the word
                 posting.lookUp()
+                #retrieve the posting
                 posting = posting.getPosting()
                 postings.append(posting)
         else:
             postings.append(segment[0])
     return postings
-
+#make comparisons on postings objects
 class Boolean:
 	def __init__(self,posting_1,posting_2):
 		self.posting_1 = posting_1
 		self.posting_2 = posting_2
 		self.p1_length = len(posting_1[1]) 
 		self.p2_length = len(posting_2[1]) 
-
+#from text
 	def getAnd(self):
 		pointer_1 = 0
 		pointer_2 = 0
@@ -117,7 +120,7 @@ class Boolean:
 			else:
 				pointer_2 +=1
 		return answer
-
+#from text
 	def getOr(self):
 		pointer_1 = 0
 		pointer_2 = 0
@@ -141,7 +144,7 @@ class Boolean:
 			answer[1].append(self.posting_2[1][pointer_2])
 			pointer_2 +=1
 		return answer
-
+#from text
 	def getAndNot(self):
 		pointer_1 = 0
 		pointer_2 = 0
@@ -171,10 +174,13 @@ def getPostings(postings):
                 postings[i+1] = getPostings(postings[i+1])[-1]
             boolean = Boolean(postings[i-1],postings[i+1])
             if postings[i] == 'AND':
+                #find intersection
                 postings[i+1] = boolean.getAnd()
             elif postings[i] == 'OR':
+                #find union
                 postings[i+1] = boolean.getOr()
             elif postings[i] == 'AND NOT':
+                #find the AND NOT
                 postings[i+1] = boolean.getAndNot()
     return postings
 
