@@ -1,19 +1,24 @@
-import csv, json, string, sys
+import csv, json, nltk, string, sys
+from nltk import WordNetLemmatizer
+nltk.download('wordnet')
 
-# start = time.clock()
 def error(name):
     '''
     Print out the error and exit the program with -1
     input: name is the name of the error
     '''
-    print(name)
+    print(name, file=sys.stderr)
     exit(-1)
 
 # Tokenize the list value
 def tokenize(value):
     words = []
     for word in value:
-        words.append(word.translate(str.maketrans('', '', string.punctuation)).lower())
+        # Lemmatize the word
+        word = word.translate(str.maketrans('', '', string.punctuation)).lower()
+        word = nltk.WordNetLemmatizer().lemmatize(word)
+        # Remove punctuations and make all words lower case
+        words.append(word)
     return words
 
 # Create the subdictionary where the keys are the words
@@ -52,13 +57,13 @@ def writeTSVfile(dictionary, directory):
     for zone in dictionary.keys():
         if zone != 'doc_id':
             # Create tsv file for write with zone name
-            file = open(directory+zone+'.tsv', 'w')
+            file = open(directory+zone+'.tsv', 'w', newline='')
             theWriter = csv.writer(file, delimiter='\t')
+            theWriter.writerow(['Word', 'Frequency', 'Posting list'])
             # Write each word's inverted index as a row
-            theWriter.writerow(list(dictionary.keys()))
-            for word in dictionary[zone].keys():
-                if len(word) != 0:
-                    theWriter.writerow([word, len(dictionary[zone][word]), dictionary[zone][word]])
+            for key in sorted(dictionary[zone]):
+                if len(key) != 0:
+                    theWriter.writerow([key, len(dictionary[zone][key]), sorted(dictionary[zone][key])])
 
 if __name__ == "__main__":
     # Get the arguments and validate the number of arguments
