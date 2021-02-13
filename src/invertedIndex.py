@@ -1,4 +1,7 @@
 import csv, json, string, sys
+import nltk
+from nltk import WordNetLemmatizer
+nltk.download('wordnet')
 
 # start = time.clock()
 def error(name):
@@ -12,7 +15,9 @@ def error(name):
 # Tokenize the list value
 def tokenize(value):
     words = []
+    print(WordNetLemmatizer().lemmatize("countries"))
     for word in value:
+        word = WordNetLemmatizer().lemmatize(word)
         words.append(word.translate(str.maketrans('', '', string.punctuation)).lower())
     return words
 
