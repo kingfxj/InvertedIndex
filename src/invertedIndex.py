@@ -1,6 +1,6 @@
-import csv, json, string, sys
+import csv, json, nltk, string, sys
+nltk.download('wordnet')
 
-# start = time.clock()
 def error(name):
     '''
     Print out the error and exit the program with -1
@@ -13,7 +13,11 @@ def error(name):
 def tokenize(value):
     words = []
     for word in value:
-        words.append(word.translate(str.maketrans('', '', string.punctuation)).lower())
+        # Lemmatize the word
+        word = word.translate(str.maketrans('', '', string.punctuation)).lower()
+        word = nltk.WordNetLemmatizer().lemmatize(word)
+        # Remove punctuations and make all words lower case
+        words.append(word)
     return words
 
 # Create the subdictionary where the keys are the words
@@ -52,7 +56,7 @@ def writeTSVfile(dictionary, directory):
     for zone in dictionary.keys():
         if zone != 'doc_id':
             # Create tsv file for write with zone name
-            file = open(directory+zone+'.tsv', 'w')
+            file = open(directory+zone+'.tsv', 'w', newline='')
             theWriter = csv.writer(file, delimiter='\t')
             theWriter.writerow(['Word', 'Frequency', 'Posting list'])
             # Write each word's inverted index as a row

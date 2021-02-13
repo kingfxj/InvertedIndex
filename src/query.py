@@ -10,22 +10,27 @@ def error(name):
     exit(-1)
 
 def getSubquery(query):
+    # Find subqueries that are in brackets
     subquery = re.findall(r"\((.*?)\)", query)
+    # Remove those subqueries from the original query
     for q in subquery:
         query = query.replace('(' + q + ')', '')
-    segments = query.split()
+    segments = query.split()    # Get correct zone:value pairs
+    # Add those subqueries segments at the correct position
     i = 0
     for j in range(len(segments)):
-        if segments[j-1] in ['AND', 'OR', 'NOT'] and segments[j] in ['AND', 'OR', 'NOT']:
+        if segments[j-1] in ['AND', 'OR'] and segments[j] in ['AND', 'OR']:
             segments.insert(j, getSubquery(subquery[i]))
             i += 1
-    if segments[-1] in ['AND', 'OR', 'NOT']:
+    if segments[-1] in ['AND', 'OR']:
         segments.append(getSubquery(subquery[-1]))
+    # For each segments, we split the zone name and the value
     for i in range(len(segments)):
         if type(segments[i]) != list:
             segments[i] = segments[i].split(':')
     return segments
 
+# Recursively get the file's that we need
 def getFileNames(segments):
     fileNames = []
     for segment in segments:
@@ -51,6 +56,7 @@ def dictionaryStore(fileNames):
         title = next(csvReader)
 
         data = [[row[0], int(row[1]), row[2]] for row in csvReader]
+        # Modify the frequencies and doc_id into ints
         for i in range(len(data)):
             data[i][2] = data[i][2][1:-1].split(', ')
             for j in range(len(data[i][2])):
@@ -74,6 +80,7 @@ class Posting:
 	def getPosting(self):
 		return [self.word,self.ids]
 
+# Recursively create postings
 def createPosting(dictionary, segments):
     postings = []
     for segment in segments:
@@ -151,12 +158,15 @@ class Boolean:
 
 		return answer
 
+# Recursively do the booleans
 def getPostings(postings):
     for i in range(len(postings)-1):
         if type(postings[i]) == str:
+            # If the left side is not finalized, recursively do it
             if type(postings[i-1][0]) == list:
                 postings[i-1] = getPostings(postings[i-1])[-1]
 
+            # If the right side is not finalized, recursively do it
             if type(postings[i+1][0]) == list:
                 postings[i+1] = getPostings(postings[i+1])[-1]
             boolean = Boolean(postings[i-1],postings[i+1])
@@ -164,6 +174,8 @@ def getPostings(postings):
                 postings[i+1] = boolean.getAnd()
             elif postings[i] == 'OR':
                 postings[i+1] = boolean.getOr()
+            elif postings[i] == 'AND NOT':
+                postings[i+1] = boolean.getAndNot()
     return postings
 
 if __name__ == "__main__":
@@ -175,23 +187,26 @@ if __name__ == "__main__":
     directory = arguments[1]
     query = arguments[2]
 
-    segments = getSubquery(query)
-    print(segments)
+    segmentsCopy = getSubquery(query)
+    # Put NOT and AND together to use AND NOT
+    segments = []
+    for i in range(len(segmentsCopy)):
+        if segmentsCopy[i] == ['AND']:
+            if i+1 < len(segmentsCopy) and segmentsCopy[i+1] == ['NOT']:
+                segments.append(['AND NOT'])
+            else:
+                segments.append(segmentsCopy[i])
+        elif segmentsCopy[i] != ['NOT']:
+            segments.append(segmentsCopy[i])
+    print('query segments:', segments)
 
     fileNames = getFileNames(segments)
-    print(fileNames)
+    print('fileNames:', fileNames)
 
     dictionary, title = dictionaryStore(fileNames)
     postings = createPosting(dictionary, segments)
-    print(postings)
+    print('postings:', postings)
 
     postings = getPostings(postings)
-    # for i in range(len(postings)-1):
-    #     if type(postings[i]) == str:
-    #         boolean = Boolean(postings[i-1],postings[i+1])
-    #         if postings[i] == 'AND':
-    #             postings[i+1] = boolean.getAnd()
-    #         elif postings[i] == 'OR':
-    #             postings[i+1] = boolean.getOr()
 
     print(postings[-1][1])
