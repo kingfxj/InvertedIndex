@@ -61,9 +61,9 @@ def writeTSVfile(dictionary, directory):
             theWriter = csv.writer(file, delimiter='\t')
             theWriter.writerow(['Word', 'Frequency', 'Posting list'])
             # Write each word's inverted index as a row
-            for word in dictionary[zone].keys():
-                if len(word) != 0:
-                    theWriter.writerow([word, len(dictionary[zone][word]), dictionary[zone][word]])
+            for key in sorted(dictionary[zone]):
+                if len(key) != 0:
+                    theWriter.writerow([key, len(dictionary[zone][key]), sorted(dictionary[zone][key])])
 
 if __name__ == "__main__":
     # Get the arguments and validate the number of arguments

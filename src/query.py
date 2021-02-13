@@ -24,6 +24,7 @@ def getSubquery(query):
             i += 1
     if segments[-1] in ['AND', 'OR']:
         segments.append(getSubquery(subquery[-1]))
+
     # For each segments, we split the zone name and the value
     for i in range(len(segments)):
         if type(segments[i]) != list:
@@ -87,6 +88,7 @@ def createPosting(dictionary, segments):
     for segment in segments:
         if len(segment) != 1:
             if type(segment[0]) == list:
+                # Recursive
                 postings.append(createPosting(dictionary, segment))
             else:
                 posting = Posting(dictionary[segment[0]], tokenize([segment[1]])[0])
@@ -96,16 +98,19 @@ def createPosting(dictionary, segments):
                 posting = posting.getPosting()
                 postings.append(posting)
         else:
+            # AND OR NOT words
             postings.append(segment[0])
     return postings
-#make comparisons on postings objects
+
+# Make comparisons on postings objects
 class Boolean:
 	def __init__(self,posting_1,posting_2):
 		self.posting_1 = posting_1
 		self.posting_2 = posting_2
 		self.p1_length = len(posting_1[1]) 
 		self.p2_length = len(posting_2[1]) 
-#from text
+
+#  From text
 	def getAnd(self):
 		pointer_1 = 0
 		pointer_2 = 0
@@ -120,7 +125,8 @@ class Boolean:
 			else:
 				pointer_2 +=1
 		return answer
-#from text
+
+# From text
 	def getOr(self):
 		pointer_1 = 0
 		pointer_2 = 0
@@ -144,7 +150,8 @@ class Boolean:
 			answer[1].append(self.posting_2[1][pointer_2])
 			pointer_2 +=1
 		return answer
-#from text
+
+# From text
 	def getAndNot(self):
 		pointer_1 = 0
 		pointer_2 = 0
