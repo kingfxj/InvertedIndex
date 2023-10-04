@@ -6,8 +6,8 @@
 
 King Fu (CCID: xinjian) Scott Kavalinas (CCID:  skavalin)
 
-
-#video link (skavalin): https://drive.google.com/drive/folders/1n4XHfD5OLlv0xrpVhheKcYigvEI9EZnv?usp=sharing
+#xinjian's video link: https://drive.google.com/file/d/130JEUjZ34mcMLOIR4BrAv_6dF00wiUze/view?usp=sharing
+#Skavalin's video link: https://drive.google.com/drive/folders/1n4XHfD5OLlv0xrpVhheKcYigvEI9EZnv?usp=sharing
 
 
 Run the program invertedIndex.py to create inverted index: In command line, go to src folder.
