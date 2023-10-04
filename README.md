@@ -8,7 +8,7 @@ King Fu (CCID: xinjian) Scott Kavalinas (CCID:  skavalin)
 
 # Videos
 
-* Link to xinjian's video: https://drive.google.com/file/d/130JEUjZ34mcMLOIR4BrAv_6dF00wiUze/view?usp=drive_link
+* Link to xinjian's video: https://drive.google.com/file/d/130JEUjZ34mcMLOIR4BrAv_6dF00wiUze/view?usp=sharing
 * Link to skavalin's video: https://drive.google.com/drive/folders/1n4XHfD5OLlv0xrpVhheKcYigvEI9EZnv?usp=sharing
 
 
